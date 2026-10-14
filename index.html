@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Impulso • Tu Guía Diaria de Mejora</title>
+  <meta name="description" content="Tu lista privada de cosas por mejorar, hábitos diarios y recomendador de productividad para móvil y PC con acceso por PIN.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Tipografía Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css?v=5">
+</head>
+<body>
+  <!-- ========================================== -->
+  <!-- PANTALLA DE ACCESO / CUENTAS PRIVADAS -->
+  <!-- ========================================== -->
+  <div class="auth-screen-overlay" id="authScreen">
+    <div class="auth-card animate-pop">
+      <div class="auth-header text-center">
+        <div class="auth-brand-badge">
+          <span class="brand-icon">⚡</span>
+          <span class="brand-name">Impulso</span>
+        </div>
+        <h1 class="auth-title">Tu Espacio Privado</h1>
+        <p class="auth-subtitle">Accede a tu cuenta o crea una nueva para proteger tu privacidad con PIN.</p>
+      </div>
+
+      <!-- Selector de pestaña: Iniciar Sesión / Crear Cuenta -->
+      <div class="auth-tabs-row">
+        <button class="auth-tab-btn active" id="tabLoginBtn" type="button">Iniciar Sesión</button>
+        <button class="auth-tab-btn" id="tabRegisterBtn" type="button">Crear Cuenta Nueva</button>
+      </div>
+
+      <!-- FORMULARIO 1: INICIAR SESIÓN -->
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label for="loginUserInput">Tu Usuario o Nombre de cuenta</label>
+          <input type="text" id="loginUserInput" required placeholder="Ej: tu_nombre" autocomplete="username" autofocus>
+        </div>
+        <div class="form-group">
+          <label for="loginPinInput">PIN Secreto (4 dígitos)</label>
+          <input type="password" id="loginPinInput" required placeholder="••••" maxlength="8" autocomplete="current-password">
+        </div>
+        <div class="form-check-group">
+          <label class="remember-label" for="loginRememberMe">
+            <input type="checkbox" id="loginRememberMe" checked>
+            <span>Mantener mi sesión iniciada en este dispositivo</span>
+          </label>
+        </div>
+        <div class="auth-error-msg hidden" id="loginErrorMsg"></div>
+        <button type="submit" class="btn-auth-submit" id="loginSubmitBtn">
+          <span>Entrar a mi espacio</span> <span>🚀</span>
+        </button>
+      </form>
+
+      <!-- FORMULARIO 2: CREAR CUENTA NUEVA -->
+      <form class="auth-form hidden" id="registerForm">
+        <div class="form-group">
+          <label for="regUserInput">Elige tu Nombre de usuario</label>
+          <input type="text" id="regUserInput" required placeholder="Ej: tu_nombre, alex, sara..." autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="regPinInput">Crea tu PIN Secreto (mínimo 4 dígitos)</label>
+          <input type="password" id="regPinInput" required placeholder="Ej: 1234" maxlength="8" autocomplete="new-password">
+          <span class="input-hint">Solo quien tenga este PIN podrá ver esta cuenta.</span>
+        </div>
+        <div class="form-group">
+          <label>¿Cómo quieres empezar tu lista?</label>
+          <div class="template-choice-row">
+            <label class="radio-card active">
+              <input type="radio" name="regTemplate" value="ejemplo" checked>
+              <span>Con hábitos y áreas de ejemplo</span>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="regTemplate" value="blanco">
+              <span>Totalmente vacía (desde cero)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-check-group">
+          <label class="remember-label" for="regRememberMe">
+            <input type="checkbox" id="regRememberMe" checked>
+            <span>Mantener mi sesión iniciada en este dispositivo</span>
+          </label>
+        </div>
+        <div class="auth-error-msg hidden" id="registerErrorMsg"></div>
+        <button type="submit" class="btn-auth-submit" id="registerSubmitBtn">
+          <span>Crear mi cuenta privada</span> <span>✨</span>
+        </button>
+      </form>
+
+      <div class="auth-footer text-center">
+        <span class="auth-lock-note">🔒 Tus datos están cifrados y aislados en la nube de Google.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- APLICACIÓN PRINCIPAL (VISIBLE TRAS ACCEDER) -->
+  <!-- ========================================== -->
+  <div class="app-shell hidden" id="appShell">
+    <!-- BARRA SUPERIOR -->
+    <header class="app-header">
+      <div class="header-top-row">
+        <div class="brand-badge">
+          <span class="brand-icon">⚡</span>
+          <span class="brand-name">Impulso</span>
+        </div>
+        <div class="header-right">
+          <button class="btn-icon-header" id="openSyncModalBtn" title="Gestión de Cuenta y Sincronización" aria-label="Cuenta">
+            <span class="icon">⚙️</span>
+            <span class="btn-label-desktop">Cuenta</span>
+          </button>
+          <button class="btn-icon-header btn-logout" id="logoutBtn" title="Cerrar Sesión / Salir" aria-label="Cerrar sesión">
+            <span class="icon">🚪</span>
+            <span class="btn-label-desktop">Salir</span>
+          </button>
+        </div>
+      </div>
+      <div class="header-greeting" id="greetingContainer" title="Haz clic para cambiar tu nombre visible">
+        <h1 class="greeting-title">
+          ¡Hola, <span id="userNameDisplay">Usuario</span>!
+        </h1>
+        <div class="header-sub-row">
+          <span class="current-date-text" id="currentDateDisplay">Cargando fecha...</span>
+          <!-- Indicador en vivo de estado de sincronización en la nube -->
+          <div class="cloud-status-pill status-connecting" id="cloudStatusIndicator">
+            <span class="status-dot"></span>
+            <span class="status-text">Conectando...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- BANNER DE MOTIVACIÓN DIARIA -->
+    <section class="daily-quote-card" id="quoteCard">
+      <div class="quote-icon">💡</div>
+      <p class="quote-text" id="quoteText">Cargando frase diaria...</p>
+    </section>
+
+    <!-- NAVEGACIÓN PRINCIPAL (TABS DESKTOP) -->
+    <nav class="app-nav-tabs" aria-label="Secciones">
+      <button class="nav-tab-btn active" data-tab="hoy" id="tabBtnHoy">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-label">Hoy</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="mejorar" id="tabBtnMejorar">
+        <span class="tab-icon">🎯</span>
+        <span class="tab-label">Mejorar</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="habitos" id="tabBtnHabitos">
+        <span class="tab-icon">🔥</span>
+        <span class="tab-label">Hábitos</span>
+      </button>
+      <button class="nav-tab-btn" data-tab="notas" id="tabBtnNotas">
+        <span class="tab-icon">📝</span>
+        <span class="tab-label">Recordatorios</span>
+      </button>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL POR VISTAS -->
+    <main class="app-main-content">
+      <!-- ========================================== -->
+      <!-- VISTA 1: HOY (FOCO Y PRODUCTIVIDAD) -->
+      <!-- ========================================== -->
+      <section class="view-panel active" id="viewHoy">
+        <!-- BOTÓN ESTRELLA: ¿QUÉ HAGO PRODUCTIVO AHORA? -->
+        <div class="hero-action-card">
+          <div class="hero-action-info">
+            <span class="action-tag">¿Bloqueado o aburrido?</span>
+            <h2 class="action-title">¿Qué hago productivo ahora?</h2>
+            <p class="action-desc">Pulsa y te sugeriremos una micro-acción rápida de 5 a 15 minutos para avanzar sin agobios.</p>
+          </div>
+          <button class="btn-action-sparkle" id="suggestActionBtn">
+            <span>Sugerir acción</span>
+            <span class="sparkle-anim">✨</span>
+          </button>
+        </div>
+
+        <!-- TUS FOCOS DEL DÍA -->
+        <div class="card-section">
+          <div class="section-topbar">
+            <div>
+              <h3 class="card-title">🎯 Tus Focos de Hoy</h3>
+              <p class="card-subtitle">Tareas clave para hoy. Se sincronizan en vivo entre tu móvil y tu PC.</p>
+            </div>
+            <button class="btn-subtle-add" id="addTodayTaskBtn">+ Añadir foco</button>
+          </div>
+
+          <div class="tasks-checklist" id="todayTasksList">
+            <!-- Tareas del día renderizadas dinámicamente -->
+          </div>
+        </div>
+
+        <!-- RESUMEN RÁPIDO DE HÁBITOS DE HOY -->
+        <div class="card-section">
+          <div class="section-topbar">
+            <div>
+              <h3 class="card-title">🔥 Tus Hábitos de Hoy</h3>
+              <p class="card-subtitle">Toca cada uno al completarlo. Puedes gestionarlos desde la pestaña Hábitos.</p>
+            </div>
+            <a href="#" class="link-see-all" id="goToHabitsLink">Ver y editar todos →</a>
+          </div>
+
+          <div class="quick-habits-row" id="todayHabitsRow">
+            <!-- Hábitos de hoy renderizados dinámicamente -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VISTA 2: COSAS PARA MEJORAR (CRECIMIENTO) -->
+      <!-- ========================================== -->
+      <section class="view-panel" id="viewMejorar">
+        <div class="section-topbar">
+          <div>
+            <h2 class="view-heading">🎯 Mis Puntos a Mejorar</h2>
+            <p class="view-subheading">Aspectos de tu vida que quieres potenciar. Crea las áreas que tú quieras.</p>
+          </div>
+          <button class="btn-primary-action" id="openAddImprovementBtn">+ Nueva mejora</button>
+        </div>
+
+        <!-- FILTROS DE CATEGORÍA DINÁMICOS -->
+        <div class="filter-chips" id="improvementFilters">
+          <!-- Renderizado dinámicamente -->
+        </div>
+
+        <div class="improvements-grid" id="improvementsGrid">
+          <!-- Renderizado dinámicamente -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VISTA 3: HÁBITOS Y RACHAS -->
+      <!-- ========================================== -->
+      <section class="view-panel" id="viewHabitos">
+        <div class="section-topbar">
+          <div>
+            <h2 class="view-heading">🔥 Hábitos Diarios y Rachas</h2>
+            <p class="view-subheading">Crea, edita o elimina hábitos a tu medida sin restricciones.</p>
+          </div>
+          <button class="btn-primary-action" id="openAddHabitBtn">+ Nuevo hábito</button>
+        </div>
+
+        <div class="habits-list-detailed" id="habitsDetailedList">
+          <!-- Renderizado dinámicamente -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VISTA 4: RECORDATORIOS Y NOTAS RÁPIDAS -->
+      <!-- ========================================== -->
+      <section class="view-panel" id="viewNotas">
+        <div class="section-topbar">
+          <div>
+            <h2 class="view-heading">📝 Recordatorios Rápidos</h2>
+            <p class="view-subheading">Anota cualquier idea, tarea pendiente o pensamiento que no quieras olvidar.</p>
+          </div>
+        </div>
+
+        <!-- FORMULARIO RÁPIDO DE NOTA -->
+        <div class="quick-note-input-bar">
+          <input type="text" id="quickNoteInput" placeholder="Añadir un recordatorio rápido..." autocomplete="off">
+          <button class="btn-submit-note" id="submitQuickNoteBtn">Guardar</button>
+        </div>
+
+        <div class="notes-grid" id="notesGrid">
+          <!-- Renderizado dinámicamente -->
+        </div>
+      </section>
+    </main>
+
+    <!-- NAVEGACIÓN MÓVIL INFERIOR FLOTANTE -->
+    <nav class="bottom-mobile-nav" aria-label="Navegación móvil">
+      <button class="mobile-nav-btn active" data-tab="hoy">
+        <span class="icon">⚡</span>
+        <span class="label">Hoy</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="mejorar">
+        <span class="icon">🎯</span>
+        <span class="label">Mejorar</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="habitos">
+        <span class="icon">🔥</span>
+        <span class="label">Hábitos</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="notas">
+        <span class="icon">📝</span>
+        <span class="label">Notas</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ¿QUÉ HAGO PRODUCTIVO AHORA? -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="suggestModal" role="dialog" aria-modal="true">
+    <div class="modal-box animate-pop">
+      <button class="btn-close-modal" id="closeSuggestModalBtn">&times;</button>
+      <div class="modal-badge">
+        <span>✨ Tu micro-acción productiva</span>
+      </div>
+      <h3 class="suggest-action-title" id="suggestTitle">Título de la acción</h3>
+      <p class="suggest-action-desc" id="suggestDesc">Descripción explicativa de la acción.</p>
+      
+      <div class="suggest-meta">
+        <span class="meta-pill" id="suggestTime">⏱️ 10 min</span>
+        <span class="meta-pill" id="suggestTag">🏷️ Salud</span>
+      </div>
+
+      <div class="modal-actions-row">
+        <button class="btn-primary-modal" id="doneSuggestedActionBtn">¡Hecho! (+1 Victoria) 🎉</button>
+        <button class="btn-secondary-modal" id="anotherSuggestionBtn">Otra sugerencia 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AÑADIR O EDITAR MEJORA PERSONAL -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="addImprovementModal" role="dialog" aria-modal="true">
+    <div class="modal-box animate-pop">
+      <button class="btn-close-modal" id="closeImprovementModalBtn">&times;</button>
+      <h3 class="modal-title" id="improvementModalTitle">Añadir Algo para Mejorar 🎯</h3>
+      
+      <form id="addImprovementForm" novalidate>
+        <input type="hidden" id="editImpId" value="">
+
+        <div class="form-group">
+          <label for="impTitleInput">¿Qué quieres mejorar?</label>
+          <input type="text" id="impTitleInput" placeholder="Ej: No mirar el móvil al despertar, entrenar, estudiar..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="impCategorySelect">Área de vida (o escribe una propia)</label>
+          <div class="category-select-wrapper">
+            <select id="impCategorySelect">
+              <!-- Rellenado dinámicamente con categorías -->
+            </select>
+            <input type="text" id="customCategoryInput" class="hidden" placeholder="Escribe el nombre de tu nueva área..." autocomplete="off">
+          </div>
+          <button type="button" class="btn-toggle-custom-cat" id="toggleCustomCatBtn">+ Escribir una nueva área</button>
+        </div>
+
+        <div class="form-group">
+          <label for="impActionInput">Micro-acción diaria para lograrlo</label>
+          <input type="text" id="impActionInput" placeholder="Ej: 10 minutos al día de lectura..." autocomplete="off">
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="submit" class="btn-primary-modal" id="submitImpBtn">Guardar Mejora</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AÑADIR O EDITAR HÁBITO -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="addHabitModal" role="dialog" aria-modal="true">
+    <div class="modal-box animate-pop">
+      <button class="btn-close-modal" id="closeHabitModalBtn">&times;</button>
+      <h3 class="modal-title" id="habitModalTitle">Nuevo Hábito Diario 🔥</h3>
+      
+      <form id="addHabitForm" novalidate>
+        <input type="hidden" id="editHabitId" value="">
+
+        <div class="form-group">
+          <label for="habitNameInput">Nombre del hábito</label>
+          <input type="text" id="habitNameInput" placeholder="Ej: Beber 2L de agua, Leer 15 min..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="habitDescInput">Descripción o motivo (opcional)</label>
+          <input type="text" id="habitDescInput" placeholder="Ej: Beber 500ml nada más levantarme para activar el cuerpo..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="habitTimeInput">Hora de aviso / Notificación (opcional)</label>
+          <div class="time-reminder-row">
+            <input type="time" id="habitTimeInput" class="time-input">
+            <label class="reminder-checkbox-label">
+              <input type="checkbox" id="habitNotifyCheck">
+              <span>🔔 Avisarme a esta hora</span>
+            </label>
+          </div>
+          <span class="input-hint">Te sonará un aviso y una notificación a la hora que indiques.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="habitIconInput">Icono / Emoji (elige o escribe el que quieras)</label>
+          <div class="icon-selector-row">
+            <input type="text" id="habitIconInput" value="💧" style="width:70px; text-align:center; font-size:1.4rem;">
+            <div class="quick-emojis-list">
+              <span class="emoji-pick">💧</span>
+              <span class="emoji-pick">🏃‍♂️</span>
+              <span class="emoji-pick">📖</span>
+              <span class="emoji-pick">🧘‍♂️</span>
+              <span class="emoji-pick">🎯</span>
+              <span class="emoji-pick">🥗</span>
+              <span class="emoji-pick">🌙</span>
+              <span class="emoji-pick">💻</span>
+              <span class="emoji-pick">💪</span>
+              <span class="emoji-pick">🧹</span>
+              <span class="emoji-pick">⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="submit" class="btn-primary-modal" id="submitHabitBtn">Guardar Hábito</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: INFORMACIÓN DE SINCRONIZACIÓN Y NUBE -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="syncModal" role="dialog" aria-modal="true">
+    <div class="modal-box animate-pop">
+      <button class="btn-close-modal" id="closeSyncModalBtn">&times;</button>
+      <h3 class="modal-title">☁️ Tu Sincronización en la Nube</h3>
+      <p class="modal-subtitle">
+        Tus datos están protegidos y sincronizados en tiempo real con Google Firebase.
+      </p>
+
+      <div class="sync-code-box">
+        <span class="sync-code-label">Estás conectado con la cuenta:</span>
+        <div class="sync-key-display" id="syncUserAccountDisplay">Mi Cuenta</div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.4;">
+          Para ver tus cosas en tu móvil, abre la app en el teléfono e <strong>inicia sesión con este mismo usuario y tu PIN secreto</strong>. Nadie más podrá entrar.
+        </p>
+      </div>
+
+      <div class="sync-backup-options">
+        <h4 class="sync-section-title">Respaldo manual en archivo</h4>
+        <div class="backup-btn-grid">
+          <button class="btn-secondary-modal" id="exportBackupBtn">Descargar archivo copia (JSON) 💾</button>
+          <label class="btn-secondary-modal btn-file-upload">
+            Importar archivo copia 📂
+            <input type="file" id="importBackupInput" accept=".json" style="display:none;">
+          </label>
+        </div>
+      </div>
+
+      <!-- ZONA DE PELIGRO: ELIMINAR CUENTA -->
+      <div class="danger-zone-box">
+        <h4 class="danger-zone-title">⚠️ Borrar Cuenta Definitivamente</h4>
+        <p class="danger-zone-desc">
+          Si ya no deseas usar esta cuenta o deseas eliminar todos tus datos en la nube de Google, puedes borrarla. Esta acción es irreversible.
+        </p>
+        <button type="button" class="btn-danger-delete-account" id="openDeleteModalBtn">
+          <span>Eliminar mi cuenta y todos mis datos</span> <span>🗑️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CONFIRMAR BORRADO DE CUENTA -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="deleteAccountModal" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-danger animate-pop">
+      <button class="btn-close-modal" id="closeDeleteModalBtn">&times;</button>
+      <div class="danger-icon-badge">🗑️</div>
+      <h3 class="modal-title" style="color:var(--accent-rose);">¿Eliminar cuenta definitivamente?</h3>
+      <p class="modal-subtitle">
+        Esta acción <strong>eliminará para siempre tu cuenta "<span id="deleteModalAccountName" style="color:#ffffff; font-weight:700;"></span>"</strong> y todas tus tareas, hábitos y datos en la nube de Google. No se podrá recuperar.
+      </p>
+
+      <form id="deleteAccountForm">
+        <div class="form-group" style="text-align:left;">
+          <label for="deleteConfirmPinInput">Introduce tu PIN de 4 dígitos para autorizar el borrado:</label>
+          <input type="password" id="deleteConfirmPinInput" required placeholder="••••" maxlength="8" autocomplete="current-password" style="text-align:center; font-size:1.25rem; letter-spacing:4px;">
+        </div>
+        <div class="auth-error-msg hidden" id="deleteAccountErrorMsg"></div>
+        <div class="modal-actions-row">
+          <button type="button" class="btn-secondary-modal" id="cancelDeleteBtn">Cancelar</button>
+          <button type="submit" class="btn-danger-confirm" id="confirmDeleteSubmitBtn">
+            <span>Sí, borrar cuenta</span> <span>🗑️</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ALERTA DE HÁBITO PENDIENTE -->
+  <!-- ========================================== -->
+  <div class="modal-overlay hidden" id="reminderAlertModal" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-alert animate-pop">
+      <button class="btn-close-modal" id="closeReminderAlertBtn">&times;</button>
+      <div class="alert-icon-badge" id="reminderAlertIcon">⏰</div>
+      <h3 class="modal-title" id="reminderAlertTitle">¡Es hora de tu hábito!</h3>
+      <p class="modal-subtitle" id="reminderAlertDesc">Recuerda completar este hábito diario.</p>
+      <div class="modal-actions-row">
+        <button type="button" class="btn-primary-modal" id="doneReminderAlertBtn">
+          <span>¡Hecho ahora mismo!</span> <span>✓</span>
+        </button>
+        <button type="button" class="btn-secondary-modal" id="dismissReminderAlertBtn">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICACIÓN TOAST -->
+  <div class="app-toast hidden" id="appToast" role="alert"></div>
+
+  <!-- Google Firebase Compat SDKs (100% Gratis - Servidores de Google en Europa) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Scripts de la Aplicación -->
+  <script src="js/data.js?v=5"></script>
+  <script src="js/storage.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "Impulso • Tu Guía Diaria de Mejora",
+  "short_name": "Impulso",
+  "description": "Lista de cosas para mejorar, hábitos diarios y recomendador de productividad para móvil y PC.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
